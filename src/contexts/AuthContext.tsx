@@ -8,7 +8,7 @@ interface User {
   name: string;
   email: string;
   type: UserType;
-  document: string; // CPF para customer, CNPJ para store
+  document: string;
 }
 
 interface RegisteredUser {
