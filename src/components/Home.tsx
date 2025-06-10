@@ -32,7 +32,7 @@ const products: Product[] = [
     id: 3,
     name: 'Tomate Cereja',
     price: 8.99,
-    image: 'https://images.unsplash.com/photo-1546470427-1a3d2be938e6?w=300&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1570543375343-63fe3d67761b?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     category: 'Legumes',
     unit: 'bandeja',
     description: 'Tomates cereja doces e suculentos, perfeitos para saladas.'

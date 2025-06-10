@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ShoppingCart, User, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,8 +16,31 @@ const Header = ({ onCartClick, onLoginClick, activeTab, onTabChange }: HeaderPro
   const { getTotalItems } = useCart();
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const totalItems = getTotalItems();
+
+  // Menu items baseados no tipo de usuário
+  const getMenuItems = () => {
+    if (!user) return [];
+    
+    if (user.type === 'customer') {
+      return [
+        { id: 'profile', label: 'Meu Perfil' },
+        { id: 'orders', label: 'Meus Pedidos' },
+        { id: 'favorites', label: 'Lojas Favoritas' },
+      ];
+    } else if (user.type === 'store') {
+      return [
+        { id: 'store-profile', label: 'Perfil da Loja' },
+        { id: 'sales', label: 'Vendas' },
+      ];
+    }
+    
+    return [];
+  };
+
+  const userMenuItems = getMenuItems();
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -45,47 +68,88 @@ const Header = ({ onCartClick, onLoginClick, activeTab, onTabChange }: HeaderPro
             >
               Início
             </button>
-            <button
-              onClick={() => onTabChange('checkout')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                activeTab === 'checkout'
-                  ? 'bg-fresh-100 text-fresh-700 font-medium'
-                  : 'text-gray-600 hover:text-fresh-600'
-              }`}
-            >
-              Checkout
-            </button>
+            {/* Só mostrar checkout para clientes */}
+            {(!user || user.type === 'customer') && (
+              <button
+                onClick={() => onTabChange('checkout')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeTab === 'checkout'
+                    ? 'bg-fresh-100 text-fresh-700 font-medium'
+                    : 'text-gray-600 hover:text-fresh-600'
+                }`}
+              >
+                Checkout
+              </button>
+            )}
           </nav>
 
           {/* Right Side */}
           <div className="flex items-center space-x-4">
-            {/* Cart Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onCartClick}
-              className="relative hover:bg-fresh-50 border-fresh-200"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {totalItems}
-                </span>
-              )}
-            </Button>
+            {/* Cart Button - só para clientes */}
+            {(!user || user.type === 'customer') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onCartClick}
+                className="relative hover:bg-fresh-50 border-fresh-200"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
+            )}
 
             {/* User Button */}
             {user ? (
-              <div className="flex items-center space-x-2">
-                <span className="hidden sm:block text-sm text-gray-600">Olá, {user.name}</span>
+              <div className="relative">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={logout}
-                  className="hover:bg-red-50 border-red-200 text-red-600"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="hover:bg-fresh-50 border-fresh-200 flex items-center gap-2"
                 >
-                  Sair
+                  <User className="w-4 h-4" />
+                  <span className="hidden sm:block">{user.name}</span>
+                  <span className="text-xs bg-fresh-100 text-fresh-700 px-2 py-1 rounded">
+                    {user.type === 'customer' ? 'Cliente' : 'Loja'}
+                  </span>
+                  <ChevronDown className="w-3 h-3" />
                 </Button>
+
+                {/* User Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    <div className="py-2">
+                      {userMenuItems.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            onTabChange(item.id);
+                            setIsUserMenuOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors ${
+                            activeTab === item.id ? 'bg-fresh-50 text-fresh-700' : 'text-gray-700'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                      <hr className="my-2" />
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        Sair
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <Button
@@ -128,21 +192,54 @@ const Header = ({ onCartClick, onLoginClick, activeTab, onTabChange }: HeaderPro
               >
                 Início
               </button>
-              <button
-                onClick={() => {
-                  onTabChange('checkout');
-                  setIsMenuOpen(false);
-                }}
-                className={`px-4 py-2 rounded-lg text-left transition-colors ${
-                  activeTab === 'checkout'
-                    ? 'bg-fresh-100 text-fresh-700 font-medium'
-                    : 'text-gray-600 hover:text-fresh-600'
-                }`}
-              >
-                Checkout
-              </button>
+              {/* Só mostrar checkout para clientes */}
+              {(!user || user.type === 'customer') && (
+                <button
+                  onClick={() => {
+                    onTabChange('checkout');
+                    setIsMenuOpen(false);
+                  }}
+                  className={`px-4 py-2 rounded-lg text-left transition-colors ${
+                    activeTab === 'checkout'
+                      ? 'bg-fresh-100 text-fresh-700 font-medium'
+                      : 'text-gray-600 hover:text-fresh-600'
+                  }`}
+                >
+                  Checkout
+                </button>
+              )}
+              
+              {user && (
+                <>
+                  <hr className="my-2" />
+                  {userMenuItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        onTabChange(item.id);
+                        setIsMenuOpen(false);
+                      }}
+                      className={`px-4 py-2 rounded-lg text-left transition-colors ${
+                        activeTab === item.id
+                          ? 'bg-fresh-100 text-fresh-700 font-medium'
+                          : 'text-gray-600 hover:text-fresh-600'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           </nav>
+        )}
+
+        {/* Click outside to close user menu */}
+        {isUserMenuOpen && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsUserMenuOpen(false)}
+          />
         )}
       </div>
     </header>
