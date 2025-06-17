@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, Eye, EyeOff, Building, FileText } from 'lucide-react';
+import { Mail, Lock, User, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,465 +13,166 @@ interface SignUpProps {
 }
 
 const SignUp = ({ onClose }: SignUpProps) => {
-  const [showCustomerPassword, setShowCustomerPassword] = useState(false);
-  const [showStorePassword, setShowStorePassword] = useState(false);
-  const [showDeliveryPassword, setShowDeliveryPassword] = useState(false);
-  const [customerForm, setCustomerForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cpf: '' });
+  const [registrationStep, setRegistrationStep] = useState<'initial' | 'additionalInfo'>('initial');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [initialForm, setInitialForm] = useState({ email: '', username: '', password: '', confirmPassword: '', name: '' });
+
+  const [customerForm, setCustomerForm] = useState({
+    name: '',
+    cpf: '',
+    birthDate: '',
+    phone: '',
+    address: {
+      address: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      zipCode: ''
+    }
+  });
+
   const [storeForm, setStoreForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cnpj: '' });
   const [deliveryForm, setDeliveryForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cnh: '' });
-  const [registerType, setRegisterType] = useState<'customer' | 'store' | 'delivery'>('customer');
-  const { registerCustomer, registerStore, registerDelivery } = useRegister();
 
-  const formatCPF = (value: string) => {
-    const numericValue = value.replace(/\D/g, '');
-    return numericValue
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-        .substring(0, 14);
-  };
+  const { initialRegister, completeCustomerRegistration, registerStore, registerDelivery } = useRegister();
 
-  const handleCustomerCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomerForm({ ...customerForm, cpf: formatCPF(e.target.value) });
-  };
-
-
-  const handleCustomerRegister = async (e: React.FormEvent) => {
+  const handleInitialRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!customerForm.name || !customerForm.email || !customerForm.password || !customerForm.confirmPassword || !customerForm.cpf) {
-      toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos.",
-        variant: "destructive",
-      });
+    if (!initialForm.email || !initialForm.username || !initialForm.password || !initialForm.confirmPassword || !initialForm.name) {
+      toast({ title: "Erro", description: "Por favor, preencha todos os campos.", variant: "destructive" });
       return;
     }
-
-    if (customerForm.password !== customerForm.confirmPassword) {
-      toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
+    if (initialForm.password !== initialForm.confirmPassword) {
+      toast({ title: "Erro", description: "As senhas não coincidem.", variant: "destructive" });
       return;
     }
-
-    const success = await registerCustomer({
-      nomeUsuario: customerForm.name,
-      nome: customerForm.name,
-      email: customerForm.email,
-      senha: customerForm.password,
-      cpf: customerForm.cpf.replace(/\D/g, '')
+    const success = await initialRegister({
+      nome: initialForm.name,
+      nomeUsuario: initialForm.username,
+      email: initialForm.email,
+      senha: initialForm.password
     });
-
     if (success) {
-      toast({
-        title: "Cadastro realizado!",
-        description: "Conta de cliente criada com sucesso! Agora você pode fazer login.",
-      });
-      setCustomerForm({ name: '', email: '', password: '', confirmPassword: '', cpf: '' });
+      toast({ title: "Primeiro passo concluído!", description: "Agora, complete seu cadastro." });
+      setRegistrationStep('additionalInfo');
+    } else {
+      toast({ title: "Erro no cadastro", description: "Usuário ou e-mail já existente.", variant: "destructive" });
+    }
+  };
+
+  const handleCustomerCompletion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const endereco = Object.values(customerForm.address).filter(Boolean).join(', ');
+    const success = await completeCustomerRegistration({
+      cpf: customerForm.cpf.replace(/\D/g, ''),
+      dataNascimento: customerForm.birthDate,
+      celular: customerForm.phone.replace(/\D/g, ''),
+      endereco
+    });
+    if (success) {
+      toast({ title: "Cadastro de cliente concluído!", description: "Sua conta foi criada. Você já pode fazer login." });
       onClose();
     } else {
-      toast({
-        title: "Erro no cadastro",
-        description: "Email já cadastrado ou dados inválidos.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro", description: "Não foi possível completar seu cadastro.", variant: "destructive" });
     }
   };
 
   const handleStoreRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!storeForm.name || !storeForm.email || !storeForm.password || !storeForm.confirmPassword || !storeForm.cnpj) {
-      toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (storeForm.password !== storeForm.confirmPassword) {
-      toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const success = await registerStore({
       name: storeForm.name,
       email: storeForm.email,
       password: storeForm.password,
       cnpj: storeForm.cnpj
     });
-
     if (success) {
-      toast({
-        title: "Cadastro realizado!",
-        description: "Conta de loja criada com sucesso! Agora você pode fazer login.",
-      });
-      setStoreForm({ name: '', email: '', password: '', confirmPassword: '', cnpj: '' });
+      toast({ title: "Cadastro de loja realizado!", description: "Sua conta foi criada com sucesso." });
       onClose();
     } else {
-      toast({
-        title: "Erro no cadastro",
-        description: "Email já cadastrado ou dados inválidos.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro no cadastro", description: "Dados inválidos ou e-mail já cadastrado.", variant: "destructive" });
     }
   };
 
   const handleDeliveryRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!deliveryForm.name || !deliveryForm.email || !deliveryForm.password || !deliveryForm.confirmPassword || !deliveryForm.cnh) {
-      toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (deliveryForm.password !== deliveryForm.confirmPassword) {
-      toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const success = await registerDelivery({
       name: deliveryForm.name,
       email: deliveryForm.email,
       password: deliveryForm.password,
       cnh: deliveryForm.cnh
     });
-
     if (success) {
-      toast({
-        title: "Cadastro realizado!",
-        description: "Conta de entregador criada com sucesso! Agora você pode fazer login.",
-      });
-      setDeliveryForm({ name: '', email: '', password: '', confirmPassword: '', cnh: '' });
+      toast({ title: "Cadastro de entregador realizado!", description: "Sua conta foi criada com sucesso." });
       onClose();
     } else {
-      toast({
-        title: "Erro no cadastro",
-        description: "Email já cadastrado ou dados inválidos.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro no cadastro", description: "Dados inválidos ou e-mail já cadastrado.", variant: "destructive" });
     }
   };
+
+  const formatCPF = (v: string) => v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})/, '$1-$2').substring(0, 14);
+  const formatPhone = (v: string) => v.replace(/\D/g, '').replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').substring(0, 15);
 
   return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <Card className="w-full max-w-md animate-scale-in">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-gray-800">
-              Crie sua conta no FreshMarket
+              {registrationStep === 'initial' ? 'Crie sua conta no FreshMarket' : 'Complete seu Cadastro'}
             </CardTitle>
-            <p className="text-gray-600">Escolha o tipo de conta para começar</p>
+            <p className="text-gray-600">
+              {registrationStep === 'initial' ? 'Rápido e fácil, vamos começar!' : 'Escolha seu tipo de perfil.'}
+            </p>
           </CardHeader>
-
           <CardContent>
-            <Tabs value={registerType} onValueChange={(value) => setRegisterType(value as 'customer' | 'store' | 'delivery')} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="customer">Cliente</TabsTrigger>
-                <TabsTrigger value="store">Loja</TabsTrigger>
-                <TabsTrigger value="delivery">Entregador</TabsTrigger>
-              </TabsList>
-              <TabsContent value="customer" className="mt-4">
-                <form onSubmit={handleCustomerRegister} className="space-y-4">
+            {registrationStep === 'initial' ? (
+                <form onSubmit={handleInitialRegister} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="customer-name">Nome</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="customer-name"
-                          type="text"
-                          placeholder="Seu nome completo"
-                          value={customerForm.name}
-                          onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                          className="pl-10"
-                      />
-                    </div>
+                    <Label>Nome Completo</Label>
+                    <Input placeholder="Nome Completo" value={initialForm.name} onChange={(e) => setInitialForm({ ...initialForm, name: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="customer-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="customer-email"
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={customerForm.email}
-                          onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
-                          className="pl-10"
-                      />
-                    </div>
+                    <Label>Nome de Usuário</Label>
+                    <Input placeholder="Nome de Usuário " value={initialForm.username} onChange={(e) => setInitialForm({ ...initialForm, username: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="customer-password">Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="customer-password"
-                          type={showCustomerPassword ? "text" : "password"}
-                          placeholder="Sua senha"
-                          value={customerForm.password}
-                          onChange={(e) => setCustomerForm({ ...customerForm, password: e.target.value })}
-                          className="pl-10 pr-10"
-                      />
-                      <button
-                          type="button"
-                          onClick={() => setShowCustomerPassword(!showCustomerPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showCustomerPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
+                    <Label>Email</Label>
+                    <Input placeholder="Email" type="email" value={initialForm.email} onChange={(e) => setInitialForm({ ...initialForm, email: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="customer-confirm-password">Confirmar Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="customer-confirm-password"
-                          type={showCustomerPassword ? "text" : "password"}
-                          placeholder="Confirme sua senha"
-                          value={customerForm.confirmPassword}
-                          onChange={(e) => setCustomerForm({ ...customerForm, confirmPassword: e.target.value })}
-                          className="pl-10 pr-10"
-                      />
-                      <button
-                          type="button"
-                          onClick={() => setShowCustomerPassword(!showCustomerPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showCustomerPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
+                    <Label>Senha</Label>
+                    <Input placeholder="Senha" type={showPassword ? "text" : "password"} value={initialForm.password} onChange={(e) => setInitialForm({ ...initialForm, password: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="customer-cpf">CPF</Label>
-                    <div className="relative">
-                      <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="customer-cpf"
-                          type="text"
-                          placeholder="000.000.000-00"
-                          value={customerForm.cpf}
-                          onChange={handleCustomerCPFChange}
-                          className="pl-10"
-                          maxLength={14}
-                      />
-                    </div>
+                    <Label>Confirmar Senha</Label>
+                    <Input placeholder="Confirmar Senha" type={showPassword ? "text" : "password"} value={initialForm.confirmPassword} onChange={(e) => setInitialForm({ ...initialForm, confirmPassword: e.target.value })} />
                   </div>
-                  <Button type="submit" className="w-full bg-fresh-500 hover:bg-fresh-600">
-                    Cadastrar Cliente
-                  </Button>
+                  <Button type="submit" className="w-full bg-fresh-500 hover:bg-fresh-600">Criar Conta</Button>
                 </form>
-              </TabsContent>
-              {/* O restante do seu componente permanece o mesmo */}
-              <TabsContent value="store" className="mt-4">
-                <form onSubmit={handleStoreRegister} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="store-name">Nome da Loja</Label>
-                    <div className="relative">
-                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="store-name"
-                          type="text"
-                          placeholder="Nome da sua loja"
-                          value={storeForm.name}
-                          onChange={(e) => setStoreForm({ ...storeForm, name: e.target.value })}
-                          className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="store-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="store-email"
-                          type="email"
-                          placeholder="email@sua-loja.com"
-                          value={storeForm.email}
-                          onChange={(e) => setStoreForm({ ...storeForm, email: e.target.value })}
-                          className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="store-password">Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="store-password"
-                          type={showStorePassword ? "text" : "password"}
-                          placeholder="Senha da loja"
-                          value={storeForm.password}
-                          onChange={(e) => setStoreForm({ ...storeForm, password: e.target.value })}
-                          className="pl-10 pr-10"
-                      />
-                      <button
-                          type="button"
-                          onClick={() => setShowStorePassword(!showStorePassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showStorePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="store-confirm-password">Confirmar Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="store-confirm-password"
-                          type={showStorePassword ? "text" : "password"}
-                          placeholder="Confirme a senha da loja"
-                          value={storeForm.confirmPassword}
-                          onChange={(e) => setStoreForm({ ...storeForm, confirmPassword: e.target.value })}
-                          className="pl-10 pr-10"
-                      />
-                      <button
-                          type="button"
-                          onClick={() => setShowStorePassword(!showStorePassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showStorePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="store-cnpj">CNPJ</Label>
-                    <div className="relative">
-                      <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="store-cnpj"
-                          type="text"
-                          placeholder="00.000.000/0000-00"
-                          value={storeForm.cnpj}
-                          onChange={(e) => setStoreForm({ ...storeForm, cnpj: e.target.value })}
-                          className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full bg-fresh-500 hover:bg-fresh-600">
-                    Cadastrar Loja
-                  </Button>
-                </form>
-              </TabsContent>
-              <TabsContent value="delivery" className="mt-4">
-                <form onSubmit={handleDeliveryRegister} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-name">Nome Completo</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="delivery-name"
-                          type="text"
-                          placeholder="Seu nome completo"
-                          value={deliveryForm.name}
-                          onChange={(e) => setDeliveryForm({ ...deliveryForm, name: e.target.value })}
-                          className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="delivery-email"
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={deliveryForm.email}
-                          onChange={(e) => setDeliveryForm({ ...deliveryForm, email: e.target.value })}
-                          className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-password">Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="delivery-password"
-                          type={showDeliveryPassword ? "text" : "password"}
-                          placeholder="Sua senha"
-                          value={deliveryForm.password}
-                          onChange={(e) => setDeliveryForm({ ...deliveryForm, password: e.target.value })}
-                          className="pl-10 pr-10"
-                      />
-                      <button
-                          type="button"
-                          onClick={() => setShowDeliveryPassword(!showDeliveryPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showDeliveryPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-confirm-password">Confirmar Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="delivery-confirm-password"
-                          type={showDeliveryPassword ? "text" : "password"}
-                          placeholder="Confirme sua senha"
-                          value={deliveryForm.confirmPassword}
-                          onChange={(e) => setDeliveryForm({ ...deliveryForm, confirmPassword: e.target.value })}
-                          className="pl-10 pr-10"
-                      />
-                      <button
-                          type="button"
-                          onClick={() => setShowDeliveryPassword(!showDeliveryPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showDeliveryPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-cnh">CNH</Label>
-                    <div className="relative">
-                      <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                          id="delivery-cnh"
-                          type="text"
-                          placeholder="00000000000"
-                          value={deliveryForm.cnh}
-                          onChange={(e) => setDeliveryForm({ ...deliveryForm, cnh: e.target.value })}
-                          className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full bg-fresh-500 hover:bg-fresh-600">
-                    Cadastrar Entregador
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-
-            <div className="mt-6 text-center">
-              <Button
-                  variant="ghost"
-                  onClick={onClose}
-                  className="text-gray-500 hover:text-gray-700"
-              >
-                Fechar
-              </Button>
-            </div>
+            ) : (
+                <Tabs defaultValue="customer">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="customer">Cliente</TabsTrigger>
+                    <TabsTrigger value="store">Loja</TabsTrigger>
+                    <TabsTrigger value="delivery">Entregador</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="customer">
+                    <form onSubmit={handleCustomerCompletion} className="space-y-3">
+                      <Input placeholder="CPF" value={customerForm.cpf} onChange={e => setCustomerForm({ ...customerForm, cpf: formatCPF(e.target.value) })} />
+                      <Input type="date" value={customerForm.birthDate} onChange={e => setCustomerForm({ ...customerForm, birthDate: e.target.value })} />
+                      <Input placeholder="Celular" value={customerForm.phone} onChange={e => setCustomerForm({ ...customerForm, phone: formatPhone(e.target.value) })} />
+                      <Input placeholder="Endereço" value={customerForm.address.address} onChange={e => setCustomerForm({ ...customerForm, address: { ...customerForm.address, address: e.target.value } })} />
+                      <Input placeholder="Número" value={customerForm.address.number} onChange={e => setCustomerForm({ ...customerForm, address: { ...customerForm.address, number: e.target.value } })} />
+                      <Input placeholder="Complemento" value={customerForm.address.complement} onChange={e => setCustomerForm({ ...customerForm, address: { ...customerForm.address, complement: e.target.value } })} />
+                      <Input placeholder="Bairro" value={customerForm.address.neighborhood} onChange={e => setCustomerForm({ ...customerForm, address: { ...customerForm.address, neighborhood: e.target.value } })} />
+                      <Input placeholder="Cidade" value={customerForm.address.city} onChange={e => setCustomerForm({ ...customerForm, address: { ...customerForm.address, city: e.target.value } })} />
+                      <Input placeholder="CEP" value={customerForm.address.zipCode} onChange={e => setCustomerForm({ ...customerForm, address: { ...customerForm.address, zipCode: e.target.value } })} />
+                      <Button type="submit" className="w-full bg-fresh-500 hover:bg-fresh-600">Finalizar Cadastro</Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+            )}
           </CardContent>
         </Card>
       </div>

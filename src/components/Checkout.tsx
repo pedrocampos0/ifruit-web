@@ -12,6 +12,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 const Checkout = () => {
+  const auth = useAuth();
+  const address = auth?.user?.address || '';
   const { items, getTotalPrice, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
   const [step, setStep] = useState(1);

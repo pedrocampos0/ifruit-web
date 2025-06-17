@@ -13,14 +13,14 @@ import ProductCardSkeleton from "@/components/ProductCartSkeleton.tsx";
 const images: { [key: string]: string } = {
   'banana': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=300&h=300&fit=crop',
   'alface': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=300&h=300&fit=crop',
-  'tomate_cereja': 'https://images.unsplash.com/photo-1570543375343-63fe3d67761b?w=300&h=300&fit=crop',
-  'maca_fuji': 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=300&h=300&fit=crop',
+  'cheiro verde': 'https://cdnm.westwing.com.br/glossary/uploads/br/2023/11/21185218/Cheiro-verde-uma-combinacao-que-traz-sabor-e-inovacao-para-qualquer-receita.-Fonte-Unsplash.jpg',
+  'rucula': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSaJanuA_wUZ7A1n7jkiZb0n5v5M3kdClrreA&s',
   'cenoura': 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=300&h=300&fit=crop',
-  'espinafre_organico': 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=300&h=300&fit=crop',
-  'laranja lima': 'https://images.unsplash.com/photo-1547514701-42782101795e?w=300&h=300&fit=crop',
+  'uva': 'https://images.unsplash.com/photo-1416432969026-7e41a751ee1e?w=300&h=300&fit=crop',
+  'abacaxi': 'https://images.unsplash.com/photo-1589820296156-2454bb8a6ad1?w=300&h=300&fit=crop',
   'brocolis': 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=300&h=300&fit=crop',
 };
-const defaultImage = 'https://images.unsplash.com/photo-1576186737222-ac14d4dec559?w=300&h=300&fit=crop';
+const defaultImage = 'https://t4.ftcdn.net/jpg/00/29/91/15/360_F_29911513_IdFIhTSh5VsJRGfvo2w3xkfmR3Rt8N4H.jpg';
 
 const Home = () => {
   const api = useApi();
