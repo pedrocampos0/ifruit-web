@@ -1,13 +1,11 @@
-
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ProductCard from './ProductCard';
 import { useCart, Product } from '@/contexts/CartContext';
 import { toast } from '@/hooks/use-toast';
-
-const categories = ['Todos', 'Frutas', 'Verduras', 'Legumes', 'Orgânicos'];
+import { useApi } from '@/hooks/useApi';
 
 const products: Product[] = [
   {
@@ -88,6 +86,30 @@ const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
   const { addToCart } = useCart();
+  const [categories, setCategories] = useState([]);
+
+  const handleFetchCategories = async () => {
+    try {
+      const api = useApi();
+      const response = await api.get('/categorias');
+      let aux = ['Todos'];
+      for (const category of response.data) {
+        aux.push(category.nome);
+      }
+      setCategories(aux);
+    } catch (error) {
+      console.error('Erro ao buscar categorias:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível carregar as categorias.',
+        variant: 'destructive',
+      });
+    }
+  }
+
+  useEffect(()=> {
+    handleFetchCategories();
+  }, [])
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
