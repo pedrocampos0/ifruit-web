@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import Home from '@/components/Home';
 import Cart from '@/components/Cart';
 import Login from '@/components/Login';
+import SignUp from '@/components/SignUp';
 import Checkout from '@/components/Checkout';
 import CustomerProfile from '@/components/CustomerProfile';
 import OrderTracking from '@/components/OrderTracking';
@@ -19,6 +20,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -30,6 +32,10 @@ const Index = () => {
 
   const handleLoginClick = () => {
     setIsLoginOpen(true);
+  };
+
+  const handleSignUpClick = () => {
+    setIsSignUpOpen(true);
   };
 
   const handleCheckout = () => {
@@ -65,6 +71,7 @@ const Index = () => {
             <Header
               onCartClick={handleCartClick}
               onLoginClick={handleLoginClick}
+              onSignUpClick={handleSignUpClick}
               activeTab={activeTab}
               onTabChange={handleTabChange}
             />
@@ -81,6 +88,10 @@ const Index = () => {
 
             {isLoginOpen && (
               <Login onClose={() => setIsLoginOpen(false)} />
+            )}
+
+            {isSignUpOpen && (
+              <SignUp onClose={() => setIsSignUpOpen(false)} />
             )}
 
             <Toaster />
