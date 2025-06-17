@@ -2,11 +2,17 @@
 import React, { useState } from 'react';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { UserProfileProvider } from '@/contexts/UserProfileContext';
 import Header from '@/components/Header';
 import Home from '@/components/Home';
 import Cart from '@/components/Cart';
 import Login from '@/components/Login';
 import Checkout from '@/components/Checkout';
+import CustomerProfile from '@/components/CustomerProfile';
+import OrderTracking from '@/components/OrderTracking';
+import FavoriteStores from '@/components/FavoriteStores';
+import StoreProfile from '@/components/StoreProfile';
+import SalesTracking from '@/components/SalesTracking';
 import { Toaster } from '@/components/ui/toaster';
 
 const Index = () => {
@@ -30,35 +36,57 @@ const Index = () => {
     setActiveTab('checkout');
   };
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return <Home />;
+      case 'checkout':
+        return <Checkout />;
+      case 'profile':
+        return <CustomerProfile />;
+      case 'orders':
+        return <OrderTracking />;
+      case 'favorites':
+        return <FavoriteStores />;
+      case 'store-profile':
+        return <StoreProfile />;
+      case 'sales':
+        return <SalesTracking />;
+      default:
+        return <Home />;
+    }
+  };
+
   return (
     <AuthProvider>
-      <CartProvider>
-        <div className="min-h-screen bg-gray-50">
-          <Header
-            onCartClick={handleCartClick}
-            onLoginClick={handleLoginClick}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
-          
-          <main>
-            {activeTab === 'home' && <Home />}
-            {activeTab === 'checkout' && <Checkout />}
-          </main>
+      <UserProfileProvider>
+        <CartProvider>
+          <div className="min-h-screen bg-gray-50">
+            <Header
+              onCartClick={handleCartClick}
+              onLoginClick={handleLoginClick}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+            />
+            
+            <main>
+              {renderContent()}
+            </main>
 
-          <Cart
-            isOpen={isCartOpen}
-            onClose={() => setIsCartOpen(false)}
-            onCheckout={handleCheckout}
-          />
+            <Cart
+              isOpen={isCartOpen}
+              onClose={() => setIsCartOpen(false)}
+              onCheckout={handleCheckout}
+            />
 
-          {isLoginOpen && (
-            <Login onClose={() => setIsLoginOpen(false)} />
-          )}
+            {isLoginOpen && (
+              <Login onClose={() => setIsLoginOpen(false)} />
+            )}
 
-          <Toaster />
-        </div>
-      </CartProvider>
+            <Toaster />
+          </div>
+        </CartProvider>
+      </UserProfileProvider>
     </AuthProvider>
   );
 };

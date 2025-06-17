@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, Building, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,8 +16,10 @@ interface LoginProps {
 const Login = ({ onClose }: LoginProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
-  const { login, register } = useAuth();
+  const [customerForm, setCustomerForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cpf: '' });
+  const [storeForm, setStoreForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cnpj: '' });
+  const [registerType, setRegisterType] = useState<'customer' | 'store'>('customer');
+  const { login, registerCustomer, registerStore } = useAuth();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,16 +44,16 @@ const Login = ({ onClose }: LoginProps) => {
     } else {
       toast({
         title: "Erro no login",
-        description: "Email ou senha incorretos.",
+        description: "Email ou senha incorretos, ou usuário não cadastrado.",
         variant: "destructive",
       });
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleCustomerRegister = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!registerForm.name || !registerForm.email || !registerForm.password || !registerForm.confirmPassword) {
+    if (!customerForm.name || !customerForm.email || !customerForm.password || !customerForm.confirmPassword || !customerForm.cpf) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos.",
@@ -60,7 +62,7 @@ const Login = ({ onClose }: LoginProps) => {
       return;
     }
 
-    if (registerForm.password !== registerForm.confirmPassword) {
+    if (customerForm.password !== customerForm.confirmPassword) {
       toast({
         title: "Erro",
         description: "As senhas não coincidem.",
@@ -69,18 +71,56 @@ const Login = ({ onClose }: LoginProps) => {
       return;
     }
 
-    const success = register(registerForm.name, registerForm.email, registerForm.password);
+    const success = registerCustomer(customerForm.name, customerForm.email, customerForm.password, customerForm.cpf);
     
     if (success) {
       toast({
         title: "Cadastro realizado!",
-        description: "Conta criada com sucesso!",
+        description: "Conta de cliente criada com sucesso! Agora você pode fazer login.",
       });
-      onClose();
+      setCustomerForm({ name: '', email: '', password: '', confirmPassword: '', cpf: '' });
     } else {
       toast({
         title: "Erro no cadastro",
-        description: "Não foi possível criar a conta.",
+        description: "Email já cadastrado ou dados inválidos.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStoreRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!storeForm.name || !storeForm.email || !storeForm.password || !storeForm.confirmPassword || !storeForm.cnpj) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha todos os campos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (storeForm.password !== storeForm.confirmPassword) {
+      toast({
+        title: "Erro",
+        description: "As senhas não coincidem.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const success = registerStore(storeForm.name, storeForm.email, storeForm.password, storeForm.cnpj);
+    
+    if (success) {
+      toast({
+        title: "Cadastro realizado!",
+        description: "Conta de loja criada com sucesso! Agora você pode fazer login.",
+      });
+      setStoreForm({ name: '', email: '', password: '', confirmPassword: '', cnpj: '' });
+    } else {
+      toast({
+        title: "Erro no cadastro",
+        description: "Email já cadastrado ou dados inválidos.",
         variant: "destructive",
       });
     }
@@ -149,78 +189,206 @@ const Login = ({ onClose }: LoginProps) => {
             </TabsContent>
             
             <TabsContent value="register" className="space-y-4">
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="register-name">Nome completo</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="register-name"
-                      type="text"
-                      placeholder="Seu nome completo"
-                      value={registerForm.name}
-                      onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                      className="pl-10"
-                    />
-                  </div>
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={registerType === 'customer' ? 'default' : 'outline'}
+                    onClick={() => setRegisterType('customer')}
+                    className="flex-1"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Cliente
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={registerType === 'store' ? 'default' : 'outline'}
+                    onClick={() => setRegisterType('store')}
+                    className="flex-1"
+                  >
+                    <Building className="w-4 h-4 mr-2" />
+                    Loja
+                  </Button>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="register-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={registerForm.email}
-                      onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-password">Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="register-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Sua senha"
-                      value={registerForm.password}
-                      onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                      className="pl-10 pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-confirm-password">Confirmar senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="register-confirm-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Confirme sua senha"
-                      value={registerForm.confirmPassword}
-                      onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                
-                <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
-                  Criar Conta
-                </Button>
-              </form>
+
+                {registerType === 'customer' ? (
+                  <form onSubmit={handleCustomerRegister} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="customer-name">Nome completo</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="customer-name"
+                          type="text"
+                          placeholder="Seu nome completo"
+                          value={customerForm.name}
+                          onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="customer-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="customer-email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={customerForm.email}
+                          onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="customer-cpf">CPF</Label>
+                      <div className="relative">
+                        <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="customer-cpf"
+                          type="text"
+                          placeholder="000.000.000-00"
+                          value={customerForm.cpf}
+                          onChange={(e) => setCustomerForm({ ...customerForm, cpf: e.target.value })}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="customer-password">Senha</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="customer-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Sua senha"
+                          value={customerForm.password}
+                          onChange={(e) => setCustomerForm({ ...customerForm, password: e.target.value })}
+                          className="pl-10 pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="customer-confirm-password">Confirmar senha</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="customer-confirm-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Confirme sua senha"
+                          value={customerForm.confirmPassword}
+                          onChange={(e) => setCustomerForm({ ...customerForm, confirmPassword: e.target.value })}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    
+                    <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600">
+                      Criar Conta Cliente
+                    </Button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleStoreRegister} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="store-name">Nome da loja</Label>
+                      <div className="relative">
+                        <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="store-name"
+                          type="text"
+                          placeholder="Nome da sua loja"
+                          value={storeForm.name}
+                          onChange={(e) => setStoreForm({ ...storeForm, name: e.target.value })}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="store-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="store-email"
+                          type="email"
+                          placeholder="loja@email.com"
+                          value={storeForm.email}
+                          onChange={(e) => setStoreForm({ ...storeForm, email: e.target.value })}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="store-cnpj">CNPJ</Label>
+                      <div className="relative">
+                        <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="store-cnpj"
+                          type="text"
+                          placeholder="00.000.000/0000-00"
+                          value={storeForm.cnpj}
+                          onChange={(e) => setStoreForm({ ...storeForm, cnpj: e.target.value })}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="store-password">Senha</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="store-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Sua senha"
+                          value={storeForm.password}
+                          onChange={(e) => setStoreForm({ ...storeForm, password: e.target.value })}
+                          className="pl-10 pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="store-confirm-password">Confirmar senha</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          id="store-confirm-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Confirme sua senha"
+                          value={storeForm.confirmPassword}
+                          onChange={(e) => setStoreForm({ ...storeForm, confirmPassword: e.target.value })}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    
+                    <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
+                      Criar Conta Loja
+                    </Button>
+                  </form>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
           
