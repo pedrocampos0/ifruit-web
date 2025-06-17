@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/contexts/AuthContext';
+import { useRegister } from '@/contexts/RegisterContext';
 import { toast } from '@/hooks/use-toast';
 
 interface SignUpProps {
@@ -13,14 +13,16 @@ interface SignUpProps {
 }
 
 const SignUp = ({ onClose }: SignUpProps) => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showCustomerPassword, setShowCustomerPassword] = useState(false);
+  const [showStorePassword, setShowStorePassword] = useState(false);
+  const [showDeliveryPassword, setShowDeliveryPassword] = useState(false);
   const [customerForm, setCustomerForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cpf: '' });
   const [storeForm, setStoreForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cnpj: '' });
   const [deliveryForm, setDeliveryForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cnh: '' });
   const [registerType, setRegisterType] = useState<'customer' | 'store' | 'delivery'>('customer');
-  const { registerCustomer, registerStore, registerDelivery } = useAuth();
+  const { registerCustomer, registerStore, registerDelivery, loading } = useRegister();
 
-  const handleCustomerRegister = (e: React.FormEvent) => {
+  const handleCustomerRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!customerForm.name || !customerForm.email || !customerForm.password || !customerForm.confirmPassword || !customerForm.cpf) {
@@ -41,7 +43,12 @@ const SignUp = ({ onClose }: SignUpProps) => {
       return;
     }
 
-    const success = registerCustomer(customerForm.name, customerForm.email, customerForm.password, customerForm.cpf);
+    const success = await registerCustomer({
+      name: customerForm.name,
+      email: customerForm.email,
+      password: customerForm.password,
+      cpf: customerForm.cpf
+    });
     
     if (success) {
       toast({
@@ -49,6 +56,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
         description: "Conta de cliente criada com sucesso! Agora você pode fazer login.",
       });
       setCustomerForm({ name: '', email: '', password: '', confirmPassword: '', cpf: '' });
+      onClose();
     } else {
       toast({
         title: "Erro no cadastro",
@@ -58,7 +66,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
     }
   };
 
-  const handleStoreRegister = (e: React.FormEvent) => {
+  const handleStoreRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!storeForm.name || !storeForm.email || !storeForm.password || !storeForm.confirmPassword || !storeForm.cnpj) {
@@ -79,7 +87,12 @@ const SignUp = ({ onClose }: SignUpProps) => {
       return;
     }
 
-    const success = registerStore(storeForm.name, storeForm.email, storeForm.password, storeForm.cnpj);
+    const success = await registerStore({
+      name: storeForm.name,
+      email: storeForm.email,
+      password: storeForm.password,
+      cnpj: storeForm.cnpj
+    });
     
     if (success) {
       toast({
@@ -87,6 +100,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
         description: "Conta de loja criada com sucesso! Agora você pode fazer login.",
       });
       setStoreForm({ name: '', email: '', password: '', confirmPassword: '', cnpj: '' });
+      onClose();
     } else {
       toast({
         title: "Erro no cadastro",
@@ -96,7 +110,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
     }
   };
 
-  const handleDeliveryRegister = (e: React.FormEvent) => {
+  const handleDeliveryRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!deliveryForm.name || !deliveryForm.email || !deliveryForm.password || !deliveryForm.confirmPassword || !deliveryForm.cnh) {
@@ -117,8 +131,12 @@ const SignUp = ({ onClose }: SignUpProps) => {
       return;
     }
 
-    // This will cause a TypeScript error until AuthContext.tsx is updated
-    const success = registerDelivery(deliveryForm.name, deliveryForm.email, deliveryForm.password, deliveryForm.cnh);
+    const success = await registerDelivery({
+      name: deliveryForm.name,
+      email: deliveryForm.email,
+      password: deliveryForm.password,
+      cnh: deliveryForm.cnh
+    });
     
     if (success) {
       toast({
@@ -126,6 +144,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
         description: "Conta de entregador criada com sucesso! Agora você pode fazer login.",
       });
       setDeliveryForm({ name: '', email: '', password: '', confirmPassword: '', cnh: '' });
+      onClose();
     } else {
       toast({
         title: "Erro no cadastro",
@@ -188,7 +207,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="customer-password"
-                      type={showPassword ? "text" : "password"}
+                      type={showCustomerPassword ? "text" : "password"}
                       placeholder="Sua senha"
                       value={customerForm.password}
                       onChange={(e) => setCustomerForm({ ...customerForm, password: e.target.value })}
@@ -196,10 +215,10 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowCustomerPassword(!showCustomerPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showCustomerPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -209,7 +228,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="customer-confirm-password"
-                      type={showPassword ? "text" : "password"}
+                      type={showCustomerPassword ? "text" : "password"}
                       placeholder="Confirme sua senha"
                       value={customerForm.confirmPassword}
                       onChange={(e) => setCustomerForm({ ...customerForm, confirmPassword: e.target.value })}
@@ -217,10 +236,10 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowCustomerPassword(!showCustomerPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showCustomerPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -279,7 +298,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="store-password"
-                      type={showPassword ? "text" : "password"}
+                      type={showStorePassword ? "text" : "password"}
                       placeholder="Senha da loja"
                       value={storeForm.password}
                       onChange={(e) => setStoreForm({ ...storeForm, password: e.target.value })}
@@ -287,10 +306,10 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowStorePassword(!showStorePassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showStorePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -300,7 +319,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="store-confirm-password"
-                      type={showPassword ? "text" : "password"}
+                      type={showStorePassword ? "text" : "password"}
                       placeholder="Confirme a senha da loja"
                       value={storeForm.confirmPassword}
                       onChange={(e) => setStoreForm({ ...storeForm, confirmPassword: e.target.value })}
@@ -308,10 +327,10 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowStorePassword(!showStorePassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showStorePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -370,7 +389,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="delivery-password"
-                      type={showPassword ? "text" : "password"}
+                      type={showDeliveryPassword ? "text" : "password"}
                       placeholder="Sua senha"
                       value={deliveryForm.password}
                       onChange={(e) => setDeliveryForm({ ...deliveryForm, password: e.target.value })}
@@ -378,10 +397,10 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowDeliveryPassword(!showDeliveryPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showDeliveryPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -391,7 +410,7 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="delivery-confirm-password"
-                      type={showPassword ? "text" : "password"}
+                      type={showDeliveryPassword ? "text" : "password"}
                       placeholder="Confirme sua senha"
                       value={deliveryForm.confirmPassword}
                       onChange={(e) => setDeliveryForm({ ...deliveryForm, confirmPassword: e.target.value })}
@@ -399,10 +418,10 @@ const SignUp = ({ onClose }: SignUpProps) => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowDeliveryPassword(!showDeliveryPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showDeliveryPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
