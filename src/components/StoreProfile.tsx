@@ -6,65 +6,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserProfile } from '@/contexts/UserProfileContext';
 import { toast } from '@/hooks/use-toast';
 
 const StoreProfile = () => {
-  const { user } = useAuth();
-  const { storeProfile, createStoreProfile, updateStoreProfile } = useUserProfile();
+  const { user, store } = useAuth();
   
   const [formData, setFormData] = useState({
-    name: storeProfile?.name || '',
-    description: storeProfile?.description || '',
-    address: storeProfile?.address || '',
-    phone: storeProfile?.phone || '',
-    email: storeProfile?.email || user?.email || '',
+    name: store?.name || '',
+    description: store?.description || '',
+    address: store?.address || '',
+    phone: store?.phone || '',
+    email: store?.email || user?.email || '',
   });
-
-  // Save store profiles to localStorage
-  const saveStoreToLocalStorage = (store: any) => {
-    try {
-      const existingStores = JSON.parse(localStorage.getItem('freshmarket_store_profiles') || '[]');
-      const storeIndex = existingStores.findIndex((s: any) => s.id === store.id);
-      
-      if (storeIndex >= 0) {
-        existingStores[storeIndex] = store;
-      } else {
-        existingStores.push(store);
-      }
-      
-      localStorage.setItem('freshmarket_store_profiles', JSON.stringify(existingStores));
-    } catch (error) {
-      console.error('Erro ao salvar loja no localStorage:', error);
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!user) return;
-
-    if (storeProfile) {
-      const updatedStore = { ...storeProfile, ...formData };
-      updateStoreProfile(formData);
-      saveStoreToLocalStorage(updatedStore);
-      toast({
-        title: "Perfil da loja atualizado!",
-        description: "As informações da sua loja foram salvas com sucesso.",
-      });
-    } else {
-      const newStore = {
-        ...formData,
-        id: Date.now(),
-        ownerId: user.id,
-      };
-      createStoreProfile(formData);
-      saveStoreToLocalStorage(newStore);
-      toast({
-        title: "Loja criada!",
-        description: "Sua loja foi criada com sucesso.",
-      });
-    }
+    const updatedStore = { ...store, ...formData };
+    // updateStoreProfile(formData); ToDo: Implementar a função de atualização do perfil da loja
+    toast({
+      title: "Perfil da loja atualizado!",
+      description: "As informações da sua loja foram salvas com sucesso.",
+    });
   };
 
   const handleChange = (field: string, value: string) => {
@@ -85,7 +48,7 @@ const StoreProfile = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Store className="w-5 h-5" />
-            {storeProfile ? 'Perfil da Loja' : 'Criar Loja'}
+            {store ? 'Perfil da Loja' : 'Criar Loja'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -166,7 +129,7 @@ const StoreProfile = () => {
             </div>
 
             <Button type="submit" className="w-full bg-fresh-500 hover:bg-fresh-600">
-              {storeProfile ? (
+              {store ? (
                 <>
                   <Save className="w-4 h-4 mr-2" />
                   Salvar Alterações

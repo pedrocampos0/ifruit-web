@@ -1,12 +1,10 @@
 import React from 'react';
 import { Package, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUserProfile } from '@/contexts/UserProfileContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 const OrderTracking = () => {
   const { user } = useAuth();
-  const { orders } = useUserProfile();
 
   // Verificar se o usuário é um cliente
   if (!user || user.type !== 'customer') {
@@ -22,7 +20,7 @@ const OrderTracking = () => {
     );
   }
 
-  const userOrders = orders.filter(order => order.userId === user?.id);
+  const userOrders = user?.orders;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -72,28 +70,28 @@ const OrderTracking = () => {
           ) : (
             <div className="space-y-4">
               {userOrders.map((order) => (
-                <Card key={order.id} className="border">
+                <Card key={order?.id} className="border">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-semibold">Pedido #{order.id}</h3>
+                        <h3 className="font-semibold">Pedido #{order?.id}</h3>
                         <p className="text-sm text-gray-600">
-                          {new Date(order.date).toLocaleDateString('pt-BR')}
+                          {new Date(order?.date).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(order.status)}
+                        {getStatusIcon(order?.status)}
                         <span className="text-sm font-medium">
-                          {getStatusText(order.status)}
+                          {getStatusText(order?.status)}
                         </span>
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      {order.items.map((item) => (
-                        <div key={item.id} className="flex justify-between text-sm">
-                          <span>{item.name} x{item.quantity}</span>
-                          <span>R$ {(item.price * item.quantity).toFixed(2)}</span>
+                      {order?.items.map((item) => (
+                        <div key={item?.id} className="flex justify-between text-sm">
+                          <span>{item?.name} x{item?.quantity}</span>
+                          <span>R$ {(item?.price * item?.quantity).toFixed(2)}</span>
                         </div>
                       ))}
                     </div>
@@ -101,7 +99,7 @@ const OrderTracking = () => {
                     <div className="border-t pt-2 mt-2">
                       <div className="flex justify-between font-semibold">
                         <span>Total:</span>
-                        <span>R$ {order.total.toFixed(2)}</span>
+                        <span>R$ {order?.total.toFixed(2)}</span>
                       </div>
                     </div>
                   </CardContent>

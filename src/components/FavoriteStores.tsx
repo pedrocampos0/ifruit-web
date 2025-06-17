@@ -3,18 +3,14 @@ import React from 'react';
 import { Heart, Store, MapPin, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUserProfile } from '@/contexts/UserProfileContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 const FavoriteStores = () => {
-  const { user } = useAuth();
-  const { userProfile, addFavoriteStore, removeFavoriteStore } = useUserProfile();
-
-  // Get all registered stores from localStorage
+  const { user, addFavoriteStore, removeFavoriteStore } = useAuth();
   const getRegisteredStores = () => {
     try {
-      const savedProfiles = localStorage.getItem('freshmarket_store_profiles');
+      const savedProfiles = '';
       if (savedProfiles) {
         return JSON.parse(savedProfiles);
       }
@@ -28,9 +24,9 @@ const FavoriteStores = () => {
   const registeredStores = getRegisteredStores();
 
   const handleToggleFavorite = (storeId: number) => {
-    if (!userProfile) return;
+    if (!user) return;
 
-    const isFavorite = userProfile.favoriteStores.includes(storeId);
+    const isFavorite = user?.favoriteStores.includes(storeId);
     
     if (isFavorite) {
       removeFavoriteStore(storeId);
@@ -56,7 +52,7 @@ const FavoriteStores = () => {
   }
 
   const favoriteStores = registeredStores.filter(store => 
-    userProfile?.favoriteStores.includes(store.id)
+    user?.favoriteStores.includes(store.id)
   );
 
   return (
@@ -125,7 +121,7 @@ const FavoriteStores = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {registeredStores.map((store) => {
-                const isFavorite = userProfile?.favoriteStores.includes(store.id);
+                const isFavorite = user?.favoriteStores.includes(store.id);
                 return (
                   <Card key={store.id} className="border">
                     <CardContent className="p-4">

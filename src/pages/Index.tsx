@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { UserProfileProvider } from '@/contexts/UserProfileContext';
 import Header from '@/components/Header';
 import Home from '@/components/Home';
 import Cart from '@/components/Cart';
@@ -65,39 +64,37 @@ const Index = () => {
 
   return (
     <AuthProvider>
-      <UserProfileProvider>
-        <CartProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Header
-              onCartClick={handleCartClick}
-              onLoginClick={handleLoginClick}
-              onSignUpClick={handleSignUpClick}
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-            />
-            
-            <main>
-              {renderContent()}
-            </main>
+      <CartProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Header
+            onCartClick={handleCartClick}
+            onLoginClick={handleLoginClick}
+            onSignUpClick={handleSignUpClick}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          />
 
-            <Cart
-              isOpen={isCartOpen}
-              onClose={() => setIsCartOpen(false)}
-              onCheckout={handleCheckout}
-            />
+          <main>
+            {renderContent()}
+          </main>
 
-            {isLoginOpen && (
-              <Login onClose={() => setIsLoginOpen(false)} />
-            )}
+          <Cart
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            onCheckout={handleCheckout}
+          />
 
-            {isSignUpOpen && (
-              <SignUp onClose={() => setIsSignUpOpen(false)} />
-            )}
+          {isLoginOpen && (
+            <Login onClose={() => setIsLoginOpen(false)} />
+          )}
 
-            <Toaster />
-          </div>
-        </CartProvider>
-      </UserProfileProvider>
+          {isSignUpOpen && (
+            <SignUp onClose={() => setIsSignUpOpen(false)} />
+          )}
+
+          <Toaster />
+        </div>
+      </CartProvider>
     </AuthProvider>
   );
 };

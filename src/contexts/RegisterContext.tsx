@@ -1,12 +1,14 @@
 import React, { createContext, useContext } from 'react';
-import { useApi } from '@/hooks/use-api';
+import { useApi } from '@/hooks/useApi';
+import { toast } from '@/hooks/use-toast';
 
 // Interfaces para os dados de registro
 interface CustomerData {
-  name: string;
+  nomeUsuario: string;
+  senha: string;
   email: string;
-  password: string;
   cpf: string;
+  nome: string;
 }
 
 interface StoreData {
@@ -27,8 +29,6 @@ interface RegisterContextType {
   registerCustomer: (data: CustomerData) => Promise<boolean>;
   registerStore: (data: StoreData) => Promise<boolean>;
   registerDelivery: (data: DeliveryData) => Promise<boolean>;
-  loading: boolean;
-  error: string | null;
 }
 
 const RegisterContext = createContext<RegisterContextType | undefined>(undefined);
@@ -42,11 +42,11 @@ export function useRegister() {
 }
 
 export function RegisterProvider({ children }: { children: React.ReactNode }) {
-  const { postData, loading, error } = useApi();
+  const api = useApi();
 
   const registerCustomer = async (data: CustomerData): Promise<boolean> => {
     try {
-      await postData('/auth/register/', data);
+      await api.post('/auth/register/', data);
       return true;
     } catch (error) {
       return false;
@@ -55,7 +55,7 @@ export function RegisterProvider({ children }: { children: React.ReactNode }) {
 
   const registerStore = async (data: StoreData): Promise<boolean> => {
     try {
-      await postData('/auth/register/store', data);
+      await api.post('/auth/register/store', data);
       return true;
     } catch (error) {
       return false;
@@ -64,7 +64,7 @@ export function RegisterProvider({ children }: { children: React.ReactNode }) {
 
   const registerDelivery = async (data: DeliveryData): Promise<boolean> => {
     try {
-      await postData('/auth/register/delivery', data);
+      await api.post('/auth/register/delivery', data);
       return true;
     } catch (error) {
       return false;
@@ -77,8 +77,6 @@ export function RegisterProvider({ children }: { children: React.ReactNode }) {
         registerCustomer,
         registerStore,
         registerDelivery,
-        loading,
-        error,
       }}
     >
       {children}

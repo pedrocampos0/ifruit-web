@@ -2,14 +2,11 @@
 import React from 'react';
 import { TrendingUp, DollarSign, Package, Calendar, Store } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUserProfile } from '@/contexts/UserProfileContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 const SalesTracking = () => {
-  const { user } = useAuth();
-  const { storeProfile, sales } = useUserProfile();
-
-  const storeSales = sales.filter(sale => sale.storeId === storeProfile?.id);
+  const { user, store } = useAuth();
+  const storeSales = store.sales;
   
   const totalSales = storeSales.reduce((sum, sale) => sum + sale.total, 0);
   const salesThisMonth = storeSales.filter(sale => {
@@ -42,7 +39,7 @@ const SalesTracking = () => {
     );
   }
 
-  if (!storeProfile) {
+  if (!store) {
     return (
       <div className="text-center py-8">
         <Store className="w-12 h-12 text-gray-300 mx-auto mb-4" />

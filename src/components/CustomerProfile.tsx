@@ -1,23 +1,20 @@
 
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { User, Mail, Phone, MapPin, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserProfile } from '@/contexts/UserProfileContext';
 import { toast } from '@/hooks/use-toast';
 
 const CustomerProfile = () => {
   const { user } = useAuth();
-  const { userProfile, updateUserProfile } = useUserProfile();
-  
   const [formData, setFormData] = useState({
-    name: userProfile?.name || user?.name || '',
-    email: userProfile?.email || user?.email || '',
-    phone: userProfile?.phone || '',
-    address: userProfile?.address || '',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: '', // n implementado no backend - login
+    address: '',  // n implementado no backend - login
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -25,11 +22,7 @@ const CustomerProfile = () => {
     
     if (!user) return;
 
-    updateUserProfile({
-      id: user.id,
-      ...formData,
-      favoriteStores: userProfile?.favoriteStores || [],
-    });
+    // update user profile
 
     toast({
       title: "Perfil atualizado!",

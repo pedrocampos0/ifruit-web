@@ -15,16 +15,13 @@ interface LoginProps {
 
 const Login = ({ onClose }: LoginProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [customerForm, setCustomerForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cpf: '' });
-  const [storeForm, setStoreForm] = useState({ name: '', email: '', password: '', confirmPassword: '', cnpj: '' });
-  const [registerType, setRegisterType] = useState<'customer' | 'store'>('customer');
-  const { login, registerCustomer, registerStore } = useAuth();
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const { login } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!loginForm.email || !loginForm.password) {
+    if (!loginForm.username || !loginForm.password) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos.",
@@ -33,7 +30,7 @@ const Login = ({ onClose }: LoginProps) => {
       return;
     }
 
-    const success = login(loginForm.email, loginForm.password);
+    const success = await login(loginForm.username, loginForm.password);
     
     if (success) {
       toast({
@@ -45,82 +42,6 @@ const Login = ({ onClose }: LoginProps) => {
       toast({
         title: "Erro no login",
         description: "Email ou senha incorretos, ou usuário não cadastrado.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCustomerRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!customerForm.name || !customerForm.email || !customerForm.password || !customerForm.confirmPassword || !customerForm.cpf) {
-      toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (customerForm.password !== customerForm.confirmPassword) {
-      toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const success = registerCustomer(customerForm.name, customerForm.email, customerForm.password, customerForm.cpf);
-    
-    if (success) {
-      toast({
-        title: "Cadastro realizado!",
-        description: "Conta de cliente criada com sucesso! Agora você pode fazer login.",
-      });
-      setCustomerForm({ name: '', email: '', password: '', confirmPassword: '', cpf: '' });
-    } else {
-      toast({
-        title: "Erro no cadastro",
-        description: "Email já cadastrado ou dados inválidos.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleStoreRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!storeForm.name || !storeForm.email || !storeForm.password || !storeForm.confirmPassword || !storeForm.cnpj) {
-      toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (storeForm.password !== storeForm.confirmPassword) {
-      toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const success = registerStore(storeForm.name, storeForm.email, storeForm.password, storeForm.cnpj);
-    
-    if (success) {
-      toast({
-        title: "Cadastro realizado!",
-        description: "Conta de loja criada com sucesso! Agora você pode fazer login.",
-      });
-      setStoreForm({ name: '', email: '', password: '', confirmPassword: '', cnpj: '' });
-    } else {
-      toast({
-        title: "Erro no cadastro",
-        description: "Email já cadastrado ou dados inválidos.",
         variant: "destructive",
       });
     }
@@ -139,16 +60,16 @@ const Login = ({ onClose }: LoginProps) => {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="login-email">Email</Label>
+              <Label htmlFor="login-username">Nome de Usuário</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  id="login-email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={loginForm.email}
-                  onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                  className="pl-10"
+                    id="login-username"
+                    type="text"
+                    placeholder="Digite seu nome de usuário"
+                    value={loginForm.username}
+                    onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                    className="pl-10"
                 />
               </div>
             </div>
