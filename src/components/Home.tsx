@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,91 +6,34 @@ import ProductCard from './ProductCard';
 import { useCart, Product } from '@/contexts/CartContext';
 import { toast } from '@/hooks/use-toast';
 import { useApi } from '@/hooks/useApi';
+import { Skeleton } from '@mui/material';
+import ProductCardSkeleton from "@/components/ProductCartSkeleton.tsx";
 
-const products: Product[] = [
-  {
-    id: 1,
-    name: 'Banana Prata',
-    price: 4.99,
-    image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=300&h=300&fit=crop',
-    category: 'Frutas',
-    unit: 'kg',
-    description: 'Bananas frescas e doces, perfeitas para vitaminas e lanches.'
-  },
-  {
-    id: 2,
-    name: 'Alface Americana',
-    price: 3.50,
-    image: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=300&h=300&fit=crop',
-    category: 'Verduras',
-    unit: 'unidade',
-    description: 'Alface crocante e fresca, ideal para saladas nutritivas.'
-  },
-  {
-    id: 3,
-    name: 'Tomate Cereja',
-    price: 8.99,
-    image: 'https://images.unsplash.com/photo-1570543375343-63fe3d67761b?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    category: 'Legumes',
-    unit: 'bandeja',
-    description: 'Tomates cereja doces e suculentos, perfeitos para saladas.'
-  },
-  {
-    id: 4,
-    name: 'Maçã Fuji',
-    price: 7.99,
-    image: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=300&h=300&fit=crop',
-    category: 'Frutas',
-    unit: 'kg',
-    description: 'Maçãs crocantes e saborosas, ricas em vitaminas.'
-  },
-  {
-    id: 5,
-    name: 'Cenoura',
-    price: 4.50,
-    image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=300&h=300&fit=crop',
-    category: 'Legumes',
-    unit: 'kg',
-    description: 'Cenouras frescas e crocantes, fonte de vitamina A.'
-  },
-  {
-    id: 6,
-    name: 'Espinafre Orgânico',
-    price: 6.99,
-    image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=300&h=300&fit=crop',
-    category: 'Orgânicos',
-    unit: 'maço',
-    description: 'Espinafre orgânico fresco, rico em ferro e vitaminas.'
-  },
-  {
-    id: 7,
-    name: 'Laranja Lima',
-    price: 5.99,
-    image: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=300&h=300&fit=crop',
-    category: 'Frutas',
-    unit: 'kg',
-    description: 'Laranjas doces e suculentas, perfeitas para sucos.'
-  },
-  {
-    id: 8,
-    name: 'Brócolis',
-    price: 7.50,
-    image: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=300&h=300&fit=crop',
-    category: 'Verduras',
-    unit: 'kg',
-    description: 'Brócolis fresco e nutritivo, rico em vitaminas e minerais.'
-  }
-];
+
+const images: { [key: string]: string } = {
+  'banana': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=300&h=300&fit=crop',
+  'alface': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=300&h=300&fit=crop',
+  'tomate_cereja': 'https://images.unsplash.com/photo-1570543375343-63fe3d67761b?w=300&h=300&fit=crop',
+  'maca_fuji': 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=300&h=300&fit=crop',
+  'cenoura': 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=300&h=300&fit=crop',
+  'espinafre_organico': 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=300&h=300&fit=crop',
+  'laranja lima': 'https://images.unsplash.com/photo-1547514701-42782101795e?w=300&h=300&fit=crop',
+  'brocolis': 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=300&h=300&fit=crop',
+};
+const defaultImage = 'https://images.unsplash.com/photo-1576186737222-ac14d4dec559?w=300&h=300&fit=crop';
 
 const Home = () => {
+  const api = useApi();
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
   const { addToCart } = useCart();
   const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleFetchCategories = async () => {
     try {
-      const api = useApi();
+      setLoading(true);
       const response = await api.get('/categorias');
       let aux = ['Todos'];
       for (const category of response.data) {
@@ -104,12 +47,48 @@ const Home = () => {
         description: 'Não foi possível carregar as categorias.',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleFetchProducts = async (category: string) => {
+    try {
+      setLoading(true);
+      const response = await api.get(`produtos?categoria=${category}`,);
+      const productsWithImages = response.data.map((product: any) => ({
+        id: product.id,
+        name: product.nome,
+        price: product.preco,
+        category: product.categoria.nome,
+        unit: 'kg',
+        description: product.nome+' frescas e de alta qualidade.',
+        image: images[product?.nome?.toLowerCase()] || defaultImage,
+      }));
+      setProducts(productsWithImages);
+    } catch (error) {
+      console.error('Erro ao buscar produtos:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível carregar os produtos.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
   }
 
   useEffect(()=> {
     handleFetchCategories();
   }, [])
+
+  useEffect(()=> {
+    for (const c of categories) {
+      if (c !== 'Todos'){
+        handleFetchProducts(c);
+      }
+    }
+  }, [categories])
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
@@ -119,9 +98,9 @@ const Home = () => {
     });
   };
 
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = products?.filter(product => {
     const matchesCategory = selectedCategory === 'Todos' || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = product?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -176,17 +155,23 @@ const Home = () => {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredProducts.map((product, index) => (
-          <div
-            key={product.id}
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <ProductCard
-              product={product}
-              onAddToCart={handleAddToCart}
-            />
-          </div>
-        ))}
+        {loading ? (
+            Array.from(new Array(3)).map((_, index) => (
+                <ProductCardSkeleton key={index} />
+            ))
+        ) : (
+            filteredProducts.map((product, index) => (
+                <div
+                    key={product.id}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <ProductCard
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                  />
+                </div>
+            ))
+        )}
       </div>
 
       {filteredProducts.length === 0 && (
