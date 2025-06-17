@@ -8,11 +8,12 @@ import { useAuth } from '@/contexts/AuthContext';
 interface HeaderProps {
   onCartClick: () => void;
   onLoginClick: () => void;
+  onSignUpClick: () => void;
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-const Header = ({ onCartClick, onLoginClick, activeTab, onTabChange }: HeaderProps) => {
+const Header = ({ onCartClick, onLoginClick, onSignUpClick, activeTab, onTabChange }: HeaderProps) => {
   const { getTotalItems } = useCart();
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -152,15 +153,26 @@ const Header = ({ onCartClick, onLoginClick, activeTab, onTabChange }: HeaderPro
                 )}
               </div>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onLoginClick}
-                className="hover:bg-fresh-50 border-fresh-200"
-              >
-                <User className="w-4 h-4 mr-2" />
-                <span className="hidden sm:block">Entrar</span>
-              </Button>
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onLoginClick}
+                  className="hover:bg-fresh-50 border-fresh-200"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:block">Entrar</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onSignUpClick}
+                  className="hover:bg-fresh-50 border-fresh-200"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:block">Criar Conta</span>
+                </Button>
+              </div>
             )}
 
             {/* Mobile Menu Button */}

@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-export type UserType = 'customer' | 'store';
+export type UserType = 'customer' | 'store' | 'delivery';
 
 interface User {
   id: number;
@@ -25,6 +24,7 @@ interface AuthContextType {
   login: (email: string, password: string) => boolean;
   registerCustomer: (name: string, email: string, password: string, cpf: string) => boolean;
   registerStore: (name: string, email: string, password: string, cnpj: string) => boolean;
+  registerDelivery: (name: string, email: string, password: string, cnh: string) => boolean;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -145,6 +145,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return true;
   };
 
+  const registerDelivery = (name: string, email: string, password: string, cnh: string): boolean => {
+    // Verificar se o email já está registrado
+    if (registeredUsers.find(u => u.email === email)) {
+      return false;
+    }
+
+    const newUser: RegisteredUser = {
+      id: Date.now(),
+      name: name,
+      email: email,
+      password: password,
+      type: 'delivery',
+      document: cnh
+    };
+
+    setRegisteredUsers(prev => [...prev, newUser]);
+    return true;
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('freshmarket_user');
@@ -157,6 +176,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         registerCustomer,
         registerStore,
+        registerDelivery,
         logout,
         isAuthenticated: !!user,
       }}

@@ -137,260 +137,48 @@ const Login = ({ onClose }: LoginProps) => {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="register">Cadastrar</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login" className="space-y-4">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={loginForm.email}
-                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="login-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Sua senha"
-                      value={loginForm.password}
-                      onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                      className="pl-10 pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-                
-                <Button type="submit" className="w-full bg-fresh-500 hover:bg-fresh-600">
-                  Entrar
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="register" className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={registerType === 'customer' ? 'default' : 'outline'}
-                    onClick={() => setRegisterType('customer')}
-                    className="flex-1"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Cliente
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={registerType === 'store' ? 'default' : 'outline'}
-                    onClick={() => setRegisterType('store')}
-                    className="flex-1"
-                  >
-                    <Building className="w-4 h-4 mr-2" />
-                    Loja
-                  </Button>
-                </div>
-
-                {registerType === 'customer' ? (
-                  <form onSubmit={handleCustomerRegister} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="customer-name">Nome completo</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="customer-name"
-                          type="text"
-                          placeholder="Seu nome completo"
-                          value={customerForm.name}
-                          onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="customer-email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="customer-email"
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={customerForm.email}
-                          onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="customer-cpf">CPF</Label>
-                      <div className="relative">
-                        <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="customer-cpf"
-                          type="text"
-                          placeholder="000.000.000-00"
-                          value={customerForm.cpf}
-                          onChange={(e) => setCustomerForm({ ...customerForm, cpf: e.target.value })}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="customer-password">Senha</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="customer-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Sua senha"
-                          value={customerForm.password}
-                          onChange={(e) => setCustomerForm({ ...customerForm, password: e.target.value })}
-                          className="pl-10 pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="customer-confirm-password">Confirmar senha</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="customer-confirm-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Confirme sua senha"
-                          value={customerForm.confirmPassword}
-                          onChange={(e) => setCustomerForm({ ...customerForm, confirmPassword: e.target.value })}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                    
-                    <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600">
-                      Criar Conta Cliente
-                    </Button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleStoreRegister} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="store-name">Nome da loja</Label>
-                      <div className="relative">
-                        <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="store-name"
-                          type="text"
-                          placeholder="Nome da sua loja"
-                          value={storeForm.name}
-                          onChange={(e) => setStoreForm({ ...storeForm, name: e.target.value })}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="store-email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="store-email"
-                          type="email"
-                          placeholder="loja@email.com"
-                          value={storeForm.email}
-                          onChange={(e) => setStoreForm({ ...storeForm, email: e.target.value })}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="store-cnpj">CNPJ</Label>
-                      <div className="relative">
-                        <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="store-cnpj"
-                          type="text"
-                          placeholder="00.000.000/0000-00"
-                          value={storeForm.cnpj}
-                          onChange={(e) => setStoreForm({ ...storeForm, cnpj: e.target.value })}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="store-password">Senha</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="store-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Sua senha"
-                          value={storeForm.password}
-                          onChange={(e) => setStoreForm({ ...storeForm, password: e.target.value })}
-                          className="pl-10 pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="store-confirm-password">Confirmar senha</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          id="store-confirm-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Confirme sua senha"
-                          value={storeForm.confirmPassword}
-                          onChange={(e) => setStoreForm({ ...storeForm, confirmPassword: e.target.value })}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                    
-                    <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
-                      Criar Conta Loja
-                    </Button>
-                  </form>
-                )}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="login-email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  id="login-email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={loginForm.email}
+                  onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                  className="pl-10"
+                />
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="login-password">Senha</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  id="login-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Sua senha"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  className="pl-10 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            
+            <Button type="submit" className="w-full bg-fresh-500 hover:bg-fresh-600">
+              Entrar
+            </Button>
+          </form>
           
           <div className="mt-6 text-center">
             <Button
