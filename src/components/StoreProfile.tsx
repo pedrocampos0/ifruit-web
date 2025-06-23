@@ -9,20 +9,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 const StoreProfile = () => {
-  const { user, store } = useAuth();
+  const { user } = useAuth();
   
   const [formData, setFormData] = useState({
-    name: store?.name || '',
-    description: store?.description || '',
-    address: store?.address || '',
-    phone: store?.phone || '',
-    email: store?.email || user?.email || '',
+    name: user?.name || '',
+    address: user?.address || '',
+    phone: user?.phone || '',
+    email: user?.email || user?.email || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const updatedStore = { ...store, ...formData };
+    const updatedStore = { ...user, ...formData };
     // updateStoreProfile(formData); ToDo: Implementar a função de atualização do perfil da loja
     toast({
       title: "Perfil da loja atualizado!",
@@ -48,7 +47,7 @@ const StoreProfile = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Store className="w-5 h-5" />
-            {store ? 'Perfil da Loja' : 'Criar Loja'}
+            {user ? 'Perfil da Loja' : 'Criar Loja'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -67,18 +66,6 @@ const StoreProfile = () => {
                   required
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="store-description">Descrição</Label>
-              <Input
-                id="store-description"
-                type="text"
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                placeholder="Descreva sua loja"
-                required
-              />
             </div>
 
             <div className="space-y-2">
@@ -129,7 +116,7 @@ const StoreProfile = () => {
             </div>
 
             <Button type="submit" className="w-full bg-fresh-500 hover:bg-fresh-600">
-              {store ? (
+              {user ? (
                 <>
                   <Save className="w-4 h-4 mr-2" />
                   Salvar Alterações

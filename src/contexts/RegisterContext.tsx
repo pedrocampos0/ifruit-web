@@ -1,11 +1,21 @@
 import React, { createContext, useContext, useState } from 'react';
 import { useApi } from '@/hooks/useApi';
 
+type UserRole = 'USER' | 'MANAGER' | 'DELIVERY';
+
 interface InitialAuthData {
   nome: string;
   nomeUsuario: string;
-  senha: string;
+  senha:string;
   email: string;
+  role: UserRole;
+}
+
+interface InitialRegisterResponse {
+  success: boolean;
+  userId?: string;
+  message?: string;
+  token?: string;
 }
 
 interface CustomerData {
@@ -24,22 +34,22 @@ interface RegisteredCustomerData {
   cpf: string;
 }
 
-interface StoreData {
-  name: string;
-  email: string;
-  password: string;
+interface StoreCompletionData {
+  nome: string;
   cnpj: string;
+  horarioFuncionamento: string;
+  endereco: string;
+  userId: string | number;
+  token: string;
 }
 
-interface DeliveryData {
-  name: string;
-  email: string;
-  password: string;
+interface DeliveryCompletionData {
   cnh: string;
+  userId: string;
 }
 
 interface StagedUser {
-  userId: number;
+  userId: string;
   email: string;
   nomeUsuario: string;
   token: string;
@@ -47,10 +57,10 @@ interface StagedUser {
 
 interface RegisterContextType {
   stagedUser: StagedUser | null;
-  initialRegister: (data: InitialAuthData) => Promise<boolean>;
+  initialRegister: (data: InitialAuthData) => Promise<InitialRegisterResponse>;
   completeCustomerRegistration: (data: CustomerData) => Promise<RegisteredCustomerData | null>;
-  registerStore: (data: StoreData) => Promise<boolean>;
-  registerDelivery: (data: DeliveryData) => Promise<boolean>;
+  completeStoreRegistration: (data: StoreCompletionData) => Promise<boolean>;
+  completeDeliveryRegistration: (data: DeliveryCompletionData) => Promise<boolean>;
 }
 
 const RegisterContext = createContext<RegisterContextType | undefined>(undefined);
@@ -67,13 +77,14 @@ export function RegisterProvider({ children }: { children: React.ReactNode }) {
   const api = useApi();
   const [stagedUser, setStagedUser] = useState<StagedUser | null>(null);
 
-  const initialRegister = async (data: InitialAuthData): Promise<boolean> => {
+  const initialRegister = async (data: InitialAuthData): Promise<InitialRegisterResponse> => {
     try {
       const responseAuthReg = await api.post('/auth/register/', {
         nome: data.nome,
         nomeUsuario: data.nomeUsuario,
         senha: data.senha,
-        email: data.email
+        email: data.email,
+        role: data.role
       });
 
       const tokenResponse = await api.post('/auth/login', {
@@ -86,10 +97,12 @@ export function RegisterProvider({ children }: { children: React.ReactNode }) {
 
       setStagedUser({ token, userId, email: data.email, nomeUsuario: data.nomeUsuario });
 
-      return true;
-    } catch (error) {
+      return { success: true, userId: userId, token: token };
+
+    } catch (error: any) {
       console.error("Erro no registro inicial:", error);
-      return false;
+      const message = error.response?.data?.message || "Ocorreu um erro desconhecido.";
+      return { success: false, message: message };
     }
   };
 
@@ -99,43 +112,46 @@ export function RegisterProvider({ children }: { children: React.ReactNode }) {
       return null;
     }
     try {
-      const headers = {
-        'Authorization': `Bearer ${stagedUser.token}`,
-        'Content-Type': 'application/json'
-      };
+      const headers = { 'Authorization': `Bearer ${stagedUser.token}` };
       const customerPayload = {
-        celular: Number(data.celular),
-        cpf: Number(data.cpf),
+        celular: data.celular,
+        cpf: data.cpf,
         dataNascimento: data.dataNascimento,
         userId: stagedUser.userId,
         endereco: data.endereco
       };
-
       const responseCustomerReg = await api.post('/cliente', customerPayload, { headers });
-      return { ...responseCustomerReg.data };
-
+      return responseCustomerReg.data;
     } catch (error) {
       console.error("Erro ao completar o cadastro do cliente:", error);
       return null;
     }
   };
 
-  const registerStore = async (data: StoreData): Promise<boolean> => {
+  const completeStoreRegistration = async (data: StoreCompletionData): Promise<boolean> => {
     try {
-      await api.post('/auth/register/store', data);
+      const headers = {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${data.token}`,
+      };
+
+      delete data.token;
+      const cnpjTratado = Number(data.cnpj.replace(/\D/g, ''));
+      data.userId = Number(data.userId);
+      await api.post('/loja', {...data, cnpj: cnpjTratado}, { headers });
       return true;
     } catch (error) {
-      console.error("Erro no registro da loja:", error);
+      console.error("Erro ao completar o registro da loja:", error);
       return false;
     }
   };
 
-  const registerDelivery = async (data: DeliveryData): Promise<boolean> => {
+  const completeDeliveryRegistration = async (data: DeliveryCompletionData): Promise<boolean> => {
     try {
-      await api.post('/auth/register/delivery', data);
+      await api.post('/entregador', data);
       return true;
     } catch (error) {
-      console.error("Erro no registro do entregador:", error);
+      console.error("Erro ao completar o registro do entregador:", error);
       return false;
     }
   };
@@ -146,8 +162,8 @@ export function RegisterProvider({ children }: { children: React.ReactNode }) {
             stagedUser,
             initialRegister,
             completeCustomerRegistration,
-            registerStore,
-            registerDelivery,
+            completeStoreRegistration,
+            completeDeliveryRegistration,
           }}
       >
         {children}

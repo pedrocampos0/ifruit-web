@@ -7,7 +7,7 @@ const OrderTracking = () => {
   const { user } = useAuth();
 
   // Verificar se o usuário é um cliente
-  if (!user || user.type !== 'customer') {
+  if (!user || user.type !== 'USER') {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <Card>

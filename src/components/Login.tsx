@@ -12,12 +12,12 @@ interface LoginProps {
   onClose: () => void;
 }
 
-type Role = 'customer' | 'store';
+type Role = 'USER' | 'MANAGER';
 
 const Login = ({ onClose }: LoginProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [role, setRole] = useState<Role>('customer');
+  const [role, setRole] = useState<Role>('USER');
   const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -37,7 +37,7 @@ const Login = ({ onClose }: LoginProps) => {
     if (success) {
       toast({
         title: "Login realizado com sucesso!",
-        description: `Bem-vindo, ${role === 'customer' ? 'cliente' : 'lojista'}!`,
+        description: `Bem-vindo, ${role === 'USER' ? 'cliente' : 'lojista'}!`,
       });
       onClose();
     } else {
@@ -66,8 +66,18 @@ const Login = ({ onClose }: LoginProps) => {
                 className="w-full mb-4"
             >
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="customer">Sou Cliente</TabsTrigger>
-                <TabsTrigger value="store">Sou Loja</TabsTrigger>
+                <TabsTrigger
+                    value="USER"
+                    className="data-[state=active]:bg-green-400 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
+                >
+                  Sou Cliente
+                </TabsTrigger>
+                <TabsTrigger
+                    value="MANAGER"
+                    className="data-[state=active]:bg-orange-400 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
+                >
+                  Sou Lojista
+                </TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -111,8 +121,8 @@ const Login = ({ onClose }: LoginProps) => {
                 </div>
               </div>
 
-              <Button type="submit" className={role === 'customer' ? 'bg-fresh-500 hover:bg-fresh-600 w-full' : 'bg-orange-500 hover:bg-orange-600 w-full'}>
-                Entrar como {role === 'customer' ? 'Cliente' : 'Loja'}
+              <Button type="submit" className={role === 'USER' ? 'bg-fresh-500 hover:bg-fresh-600 w-full' : 'bg-orange-500 hover:bg-orange-600 w-full'}>
+                Entrar como {role === 'USER' ? 'Cliente' : 'Loja'}
               </Button>
             </form>
 

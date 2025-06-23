@@ -25,13 +25,13 @@ const Header = ({ onCartClick, onLoginClick, onSignUpClick, activeTab, onTabChan
   const getMenuItems = () => {
     if (!user) return [];
     
-    if (user.type === 'customer') {
+    if (user.type === 'USER') {
       return [
         { id: 'profile', label: 'Meu Perfil' },
         { id: 'orders', label: 'Meus Pedidos' },
         { id: 'favorites', label: 'Lojas Favoritas' },
       ];
-    } else if (user.type === 'store') {
+    } else if (user.type === 'MANAGER') {
       return [
         { id: 'store-profile', label: 'Perfil da Loja' },
         { id: 'sales', label: 'Vendas' },
@@ -70,7 +70,7 @@ const Header = ({ onCartClick, onLoginClick, onSignUpClick, activeTab, onTabChan
               Início
             </button>
             {/* Só mostrar checkout para clientes */}
-            {(!user || user.type === 'customer') && (
+            {(!user || user.type === 'USER') && (
               <button
                 onClick={() => onTabChange('checkout')}
                 className={`px-4 py-2 rounded-lg transition-colors ${
@@ -87,7 +87,7 @@ const Header = ({ onCartClick, onLoginClick, onSignUpClick, activeTab, onTabChan
           {/* Right Side */}
           <div className="flex items-center space-x-4">
             {/* Cart Button - só para clientes */}
-            {(!user || user.type === 'customer') && (
+            {(!user || user.type === 'USER') && (
               <Button
                 variant="outline"
                 size="sm"
@@ -107,15 +107,21 @@ const Header = ({ onCartClick, onLoginClick, onSignUpClick, activeTab, onTabChan
             {user ? (
               <div className="relative">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="hover:bg-fresh-50 border-fresh-200 flex items-center gap-2"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="hover:bg-gray-50 border-gray-200 flex items-center gap-2"
                 >
                   <User className="w-4 h-4" />
                   <span className="hidden sm:block">{user.name}</span>
-                  <span className="text-xs bg-fresh-100 text-fresh-700 px-2 py-1 rounded">
-                    {user.type === 'customer' ? 'Cliente' : 'Loja'}
+                  <span
+                      className={`text-xs font-medium px-2 py-1 rounded-md ${
+                          user.type === 'USER'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-orange-100 text-orange-800'
+                      }`}
+                  >
+                    {user.type === 'USER' ? 'Cliente' : 'Loja'}
                   </span>
                   <ChevronDown className="w-3 h-3" />
                 </Button>
@@ -205,7 +211,7 @@ const Header = ({ onCartClick, onLoginClick, onSignUpClick, activeTab, onTabChan
                 Início
               </button>
               {/* Só mostrar checkout para clientes */}
-              {(!user || user.type === 'customer') && (
+              {(!user || user.type === 'USER') && (
                 <button
                   onClick={() => {
                     onTabChange('checkout');

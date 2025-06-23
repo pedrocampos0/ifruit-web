@@ -3,7 +3,7 @@ import { useApi } from "@/hooks/useApi.ts";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import SignUp from "@/components/SignUp.tsx";
 
-export type UserType = 'customer' | 'store' | 'delivery';
+export type UserType = 'USER' | 'MANAGER' | 'delivery';
 
 interface Item {
   id: number;
@@ -46,10 +46,10 @@ export interface User {
 }
 
 export interface Store extends Omit<User, 'document'> {
-  type: 'store';
+  type: 'MANAGER';
   cnpj: string;
   sales?: Sale[];
-  description: string;
+  horarioFuncionamento: string;
 }
 
 interface AuthContextType {
@@ -63,7 +63,7 @@ interface AuthContextType {
 
 interface CustomJwtPayload extends JwtPayload {
   nomeUsuario: string;
-  role: "USER" | "STORE" | "DELIVERY";
+  role: "USER" | "MANAGER" | "DELIVERY";
   sub: string;
 }
 
@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       let loggedUser: User | Store | null = null;
 
       switch(userType) {
-        case 'customer': {
+        case 'USER': {
           const resClients = await api.get('/cliente');
           for (const client of resClients.data) {
             if (client.userId === userId) {
@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 username: decoded.nomeUsuario,
                 name: client.user.nome,
                 email: client.user.email,
-                type: 'customer',
+                type: 'USER',
                 document: client.cpf.toString(),
                 address: client.endereco,
                 phone: client.celular.toString(),
@@ -124,22 +124,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           break;
         }
 
-        case 'store': {
-          const resStores = await api.get('/cliente');
+        case 'MANAGER': {
+          const resStores = await api.get('/loja');
           for (const storeInfo of resStores.data) {
             if (storeInfo.userId === userId) {
               loggedUser = {
                 id: storeInfo.id,
                 username: decoded.nomeUsuario,
-                name: storeInfo.user.nome,
-                email: storeInfo.user.email,
-                type: 'store',
-                cnpj: storeInfo.cnpj.toString(),
+                name: storeInfo.nome,
+                email: storeInfo.email || '',
+                type: 'MANAGER',
+                cnpj: storeInfo.cnpj,
                 address: storeInfo.endereco,
-                phone: storeInfo.telefone.toString(),
-                description: storeInfo.descricao || '',
+                phone: storeInfo.telefone || '',
+                horarioFuncionamento: storeInfo.horarioFuncionamento || '',
                 token: token,
                 favoriteStores: [],
+                sales: storeInfo.vendas || [],
               };
               break;
             }
@@ -173,7 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateFavoriteStores = async (storeId: number, action: 'add' | 'remove') => {
-    if (!user || user.type !== 'customer') return;
+    if (!user || user.type !== 'USER') return;
 
     const currentFavorites = user.favoriteStores || [];
     const newFavorites = action === 'add'
