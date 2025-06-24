@@ -112,12 +112,12 @@ export function RegisterProvider({ children }: { children: React.ReactNode }) {
       return null;
     }
     try {
-      const headers = { 'Authorization': `Bearer ${stagedUser.token}` };
+      const headers = { 'Authorization': `Bearer ${stagedUser.token}`, 'Content-Type': 'application/json'};
       const customerPayload = {
-        celular: data.celular,
-        cpf: data.cpf,
+        celular: Number(data.celular),
+        cpf: Number(data.cpf),
         dataNascimento: data.dataNascimento,
-        userId: stagedUser.userId,
+        userId: Number(stagedUser.userId),
         endereco: data.endereco
       };
       const responseCustomerReg = await api.post('/cliente', customerPayload, { headers });

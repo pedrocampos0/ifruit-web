@@ -53,11 +53,8 @@ const CustomerProfile = () => {
         .join(', ');
 
     const updatedUser = {
-      name: formData.name,
-      username: formData.username,
-      email: formData.email,
-      phone: formData.phone,
-      address: fullAddress,
+      celular: Number(formData.phone),
+      endereco: fullAddress,
       dataNascimento: formData.dataNascimento,
     };
 
@@ -68,29 +65,12 @@ const CustomerProfile = () => {
     };
 
     try {
-      const res = await api.patch(`/cliente/${user.id}`, updatedUser, { headers });
-      const updatedUserData = res.data;
-      const newAddressParts = updatedUserData.address?.split(',') || ['', '', '', ''];
-
-      setFormData({
-        name: updatedUserData.name,
-        username: updatedUserData.username,
-        email: updatedUserData.email,
-        phone: updatedUserData.phone,
-        logradouro: newAddressParts[0]?.trim(),
-        numero: newAddressParts[1]?.trim(),
-        complemento: newAddressParts[2]?.trim() || '',
-        bairro: newAddressParts[3]?.trim(),
-        cidade: newAddressParts[4]?.trim(),
-        cep: newAddressParts[5]?.trim(),
-        cpf: updatedUserData.document || '',
-        dataNascimento: formatDateForInput(updatedUserData.dataNascimento),
-      });
-
+      await api.patch(`/cliente/${user.id}`, updatedUser, { headers });
       toast({
         title: "Perfil atualizado!",
         description: "Suas informações foram salvas com sucesso.",
       });
+      window.location.reload();
     } catch (error) {
       console.error("Erro ao atualizar perfil:", error);
       toast({

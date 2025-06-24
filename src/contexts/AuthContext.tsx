@@ -43,6 +43,8 @@ export interface User {
   favoriteStores: number[];
   orders?: Order[];
   dataNascimento?: string;
+  cnpj?: string;
+  horarioFuncionamento?: string;
 }
 
 export interface Store extends Omit<User, 'document'> {

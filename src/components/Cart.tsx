@@ -1,9 +1,10 @@
-
 import React from 'react';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useCart } from '@/contexts/CartContext';
+import { toast } from '@/hooks/use-toast';
+import { useApi } from '@/hooks/use-api';
 
 interface CartProps {
   isOpen: boolean;
@@ -12,11 +13,42 @@ interface CartProps {
 }
 
 const Cart = ({ isOpen, onClose, onCheckout }: CartProps) => {
-  const { items, updateQuantity, removeFromCart, getTotalPrice } = useCart();
+  const api = useApi(); 
+  const { items, updateQuantity, removeFromCart, getTotalPrice, cartId } = useCart();
+  const handleCheckout = async () => {
+    if (items.length === 0) {
+      toast({
+        title: "Carrinho Vazio",
+        description: "Adicione itens ao carrinho antes de finalizar o pedido.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleCheckout = () => {
-    onCheckout();
-    onClose();
+    try {
+      if (cartId) {
+        toast({
+          title: "Pedido Finalizado!",
+          description: `Seu pedido com o Carrinho ID ${cartId} foi finalizado com sucesso!`,
+          variant: "default",
+        });
+        onCheckout();
+        onClose();
+      } else {
+        toast({
+          title: "Erro no Carrinho",
+          description: "Nenhum carrinho ativo encontrado para finalizar.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao finalizar o pedido:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível finalizar o pedido. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
